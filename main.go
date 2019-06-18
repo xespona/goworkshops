@@ -2,13 +2,22 @@ package main
 
 import (
 	"fmt"
-	"github.com/xespona/goworkshops/crypto"
+	"github.com/xespona/goworkshops/blackjack"
 )
 
 func main() {
-	a := "FOR A MOMENT, NOTHING HAPPENED. THEN, AFTER A SECOND OR SO, NOTHING CONTINUED TO HAPPEN"
-	s := crypto.Encrypt(a)
 
-	fmt.Println(s)
-	fmt.Println(crypto.Decrypt(s))
+	game := blackjack.New(map[string][]string{
+		"Crupier": {"Ace"},
+		"Uno": {"Ace", "Eight"},
+	})
+
+	game.Hit("Uno", "Eight")
+	game.Hit("Uno", "King")
+	game.Hit("Crupier", "Ace")
+	game.Hit("Crupier", "Ace")
+	game.Hit("Crupier", "Nine")
+
+	fmt.Println(game.Winner())
+
 }
