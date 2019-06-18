@@ -14,9 +14,13 @@ func main() {
 
 	game.Hit("Uno", "Eight")
 	game.Hit("Uno", "King")
+
+	game.Hit("Crupier", "Jack")
+	game.Hit("Crupier", "Jack")
+	game.Hit("Crupier", "Jack")
+	game.Hit("Crupier", "Jack")
 	game.Hit("Crupier", "Ace")
-	game.Hit("Crupier", "Ace")
-	game.Hit("Crupier", "Nine")
+
 
 	fmt.Println(game.Winner())
 
