@@ -6,7 +6,7 @@ import (
 
 type game struct {
 	players map[string][]string
-	cards map[string]int
+	cards   map[string]int
 }
 
 type BlackjackSim interface {
@@ -14,28 +14,27 @@ type BlackjackSim interface {
 	Winner() string
 }
 
-
 func New(initialSituation map[string][]string) BlackjackSim {
-	cards := map[string]int {
+	cards := map[string]int{
 		"AceOne": 1,
-		"Ace": 11,
-		"Two": 2,
-		"Three": 3,
-		"Four": 4,
-		"Five": 5,
-		"Six": 6,
-		"Seven": 7,
-		"Eight": 8,
-		"Nine": 9,
-		"Ten": 10,
-		"Jack": 10,
-		"Queen":10,
-		"King":10,
+		"Ace":    11,
+		"Two":    2,
+		"Three":  3,
+		"Four":   4,
+		"Five":   5,
+		"Six":    6,
+		"Seven":  7,
+		"Eight":  8,
+		"Nine":   9,
+		"Ten":    10,
+		"Jack":   10,
+		"Queen":  10,
+		"King":   10,
 	}
 
 	return &game{
-		players:initialSituation,
-		cards:cards,
+		players: initialSituation,
+		cards:   cards,
 	}
 }
 
@@ -44,7 +43,7 @@ func (g *game) Hit(player string, card string) {
 	//fmt.Println(player, card)
 
 	actualPoints := g.calculatePoints(g.players[player])
-	if actualPoints + g.cards[card] > 42 {
+	if actualPoints+g.cards[card] > 42 {
 		var err error = nil
 		var position int = -1
 		for err == nil {
@@ -62,16 +61,15 @@ func (g *game) Hit(player string, card string) {
 }
 
 func (g *game) Winner() string {
-	totals :=  make(map[string]int, len(g.players))
+	totals := make(map[string]int, len(g.players))
 
-	for name, cards :=range g.players {
+	for name, cards := range g.players {
 		totals[name] = g.calculatePoints(cards)
 	}
 
 	var winners []string
 
 	maxPoints := 0
-
 	for name, points := range totals {
 		if points > 42 {
 			continue
@@ -88,7 +86,6 @@ func (g *game) Winner() string {
 	if len(winners) != 1 {
 		return "Draw"
 	}
-
 
 	return winners[0]
 }
