@@ -4,18 +4,28 @@ import (
 	"fmt"
 )
 
-type game struct {
-	players map[string][]string
-	cards   map[string]int
-}
-
 type BlackjackSim interface {
 	Hit(player string, card string)
 	Winner() string
 }
 
-func New(initialSituation map[string][]string) BlackjackSim {
-	cards := map[string]int{
+type game struct {
+	players      map[string][]card
+	cardValues   map[card]int
+	cards []card
+}
+
+func New(initialSituation map[string][]string, requestedDecks int) BlackjackSim {
+	if requestedDecks == 0 {
+		requestedDecks = numDecks
+	}
+
+	playingDecks := make([]deck, requestedDecks)
+	for i := 1; i <= requestedDecks; i++ {
+		playingDecks[i] =  newDeck()
+	}
+
+	values := map[string]int{
 		"AceOne": 1,
 		"Ace":    11,
 		"Two":    2,
@@ -33,8 +43,9 @@ func New(initialSituation map[string][]string) BlackjackSim {
 	}
 
 	return &game{
-		players: initialSituation,
-		cards:   cards,
+		players:    initialSituation,
+		cardValues: values,
+		cards:      cards,
 	}
 }
 
@@ -43,7 +54,7 @@ func (g *game) Hit(player string, card string) {
 	//fmt.Println(player, card)
 
 	actualPoints := g.calculatePoints(g.players[player])
-	if actualPoints+g.cards[card] > 42 {
+	if actualPoints+g.cardValues[card] > 42 {
 		var err error = nil
 		var position int = -1
 		for err == nil {
@@ -93,7 +104,7 @@ func (g *game) Winner() string {
 func (g *game) calculatePoints(cards []string) int {
 	total := 0
 	for _, card := range cards {
-		total += g.cards[card]
+		total += g.cardValues[card]
 	}
 
 	return total
@@ -101,7 +112,7 @@ func (g *game) calculatePoints(cards []string) int {
 
 func (g *game) acePosition(cards []string) (int, error) {
 	for k, card := range cards {
-		if g.cards[card] == 11 {
+		if g.cardValues[card] == 11 {
 			return k, nil
 		}
 	}
