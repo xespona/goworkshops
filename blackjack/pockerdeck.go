@@ -2,8 +2,6 @@ package blackjack
 
 type card string
 
-const numDecks = 1
-
 const (
 	Ace    card = "Ace"
 	Two    card = "Two"
@@ -21,36 +19,41 @@ const (
 	AceOne card = "AceOne"
 )
 
-var cardValues = map[card]int{
-	Ace:    11,
-	Two:    2,
-	Three:  3,
-	Four:   4,
-	Five:   5,
-	Six:    6,
-	Seven:  7,
-	Eight:  8,
-	Nine:   9,
-	Ten:    10,
-	Jack:   10,
-	Queen:  10,
-	King:   10,
-	AceOne: 1,
+type PokerDeck struct {
+	deckCards []card
+	cardValues map[card]int
 }
 
-type deck struct {
-	cards []card
+func (d *PokerDeck) cards() []card {
+	return d.deckCards
 }
 
-func newDeck() []card {
+func (d *PokerDeck) cardValue(card card) int {
+	return d.cardValues[card]
+}
+
+func NewPockerDeck() *PokerDeck {
 	cards := []card{Ace, Two, Three, Four, Five, Six, Seven, Eight, Nine, Ten, Jack, Queen, King}
 	for i := 1; i <= 4; i++ {
 		cards = append(cards, cards...)
 	}
 
-	return cards
-}
+	cardValues := map[card]int{
+		Ace:    11,
+		Two:    2,
+		Three:  3,
+		Four:   4,
+		Five:   5,
+		Six:    6,
+		Seven:  7,
+		Eight:  8,
+		Nine:   9,
+		Ten:    10,
+		Jack:   10,
+		Queen:  10,
+		King:   10,
+		AceOne: 1,
+	}
 
-func (d *deck) getCards() []card {
-	return d.cards
+	return &PokerDeck{deckCards: cards, cardValues: cardValues}
 }
