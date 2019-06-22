@@ -7,36 +7,97 @@ import (
 )
 
 const defaultDecksNumber = 1
+const MinPlayers = 1
+const MaxPlayers = 6
+const Croupier = "Croupier"
+const Draw = "Draw"
+const MaxScore = 42
 
 type (
-	deck interface {
-		cards() []card
-		cardValue(card) int
-	}
-
 	PlayableBlackJackSim interface {
+		PlayerPoints(player string) int
 		CurrentStatus() map[string][]card
-		Hit(player string) error
+		Hit(player string)
 		Winner() string
 	}
 
 	// game is the struct representation of our bla``sss`sss`ssd.,.,,dezfckjack game. It has a:
 	// - deck, representing the type of deck we are using for this game. Who knows, maybe you want to play something fancy?
 	// - playerCards, representing the actual cards hold by the different players (not including the Croupier
-	// - croupierCards.
 	// - gameCards, representing ALL the different cards the game has (useful when using multiple decks). The order is important
 	// - nextCardToDraw, integer representing at the position of the gameCards slice for the next card to be drawn.
 	blackjack struct {
-		deck
+		Deck
 		playerCards    map[string][]card
-		croupierCards  []card
 		gameCards      []card
 		nextCardToDraw int
 	}
 )
 
-func New(players []string, deck deck, requestedDecks int) PlayableBlackJackSim {
-	if len(players) <= 0 || len(players) > 6 {
+func (g *blackjack) PlayerPoints(player string) int {
+	return g.calculatePoints(g.playerCards[player])
+}
+
+func (g *blackjack) CurrentStatus() map[string][]card {
+	var result map[string][]card
+	result = make(map[string][]card, len(g.playerCards))
+	for name, cards := range g.playerCards {
+		result[name] = cards
+	}
+	return result
+}
+
+func (g *blackjack) Hit(player string) {
+	actualPoints := g.calculatePoints(g.playerCards[player])
+	card := g.drawCard()
+	if actualPoints+g.cardValue(card) > MaxScore {
+		var err error = nil
+		var position int
+		for err == nil {
+			position, err = g.acePosition(g.playerCards[player])
+			if err == nil {
+				g.playerCards[player][position] = "AceOne"
+			} else if card == "Ace" {
+				card = "AceOne"
+			}
+		}
+	}
+
+	g.playerCards[player] = append(g.playerCards[player], card)
+}
+
+func (g *blackjack) Winner() string {
+	totals := make(map[string]int, len(g.playerCards))
+
+	for name, cards := range g.playerCards {
+		totals[name] = g.calculatePoints(cards)
+	}
+
+	var winners []string
+
+	maxPoints := 0
+	for name, points := range totals {
+		if points > MaxScore {
+			continue
+		}
+
+		if points > maxPoints {
+			winners = []string{name}
+			maxPoints = points
+		} else if points == maxPoints {
+			winners = append(winners, name)
+		}
+	}
+
+	if len(winners) == 1 {
+		return winners[0]
+	}
+
+	return Draw
+}
+
+func New(players []string, deck Deck, requestedDecks int) PlayableBlackJackSim {
+	if len(players) < MinPlayers || len(players) > MaxPlayers {
 		panic(fmt.Sprintf("invalid number of players: %d", len(players)))
 	}
 
@@ -51,103 +112,22 @@ func New(players []string, deck deck, requestedDecks int) PlayableBlackJackSim {
 		cards = append(cards, deckCards...)
 	}
 
-	//fmt.Printf("%v\n", cards)
-
-	g := &blackjack{deck: deck, gameCards: cards, nextCardToDraw: 0, playerCards: make(map[string][]card)}
+	g := &blackjack{Deck: deck, gameCards: cards, nextCardToDraw: 0, playerCards: make(map[string][]card)}
 	g.shuffleCards()
 
 	// deal to each player
 	for _, name := range players {
 		for j := 0; j < 2; j++ {
-			//fmt.Println(j)
-			if card, err := g.drawCard(); err == nil {
-				//fmt.Printf("card drawn %v\n", string(card))
-				g.playerCards[name] = append(g.playerCards[name], card)
-			} else {
-				//fmt.Println("WTF")
-				panic("ERROR WHEN DEALING THE INITIAL CARDS TO PLAYERS...")
-			}
+			card := g.drawCard()
+			g.playerCards[name] = append(g.playerCards[name], card)
 		}
 	}
-
-	//fmt.Printf("players: %v\n", g.playerCards)
 
 	// deal to croupier (just one)
-	if card, err := g.drawCard(); err == nil {
-		g.croupierCards = append(g.croupierCards, card)
-	} else {
-		panic("ERROR WHEN DEALING THE INITIAL CARDS TO CROUPIER...")
-	}
-
-	//fmt.Printf("croupier: %v\n", g.croupierCards)
+	card := g.drawCard()
+	g.playerCards[Croupier] = append(g.playerCards[Croupier], card)
 
 	return g
-}
-
-func (g *blackjack) CurrentStatus() map[string][]card {
-	var result map[string][]card
-	result = make(map[string][]card, len(g.playerCards)+1)
-	for name, cards := range g.playerCards {
-		result[name] = cards
-	}
-	result["Croupier"] = g.croupierCards
-	return result
-}
-
-func (g *blackjack) Hit(player string) error {
-	//fmt.Println(g.playerCards[player])
-	//fmt.Println(player, card)
-
-	actualPoints := g.calculatePoints(g.playerCards[player])
-	if card, err := g.drawCard(); err == nil {
-		if actualPoints+g.cardValue(card) > 42 {
-			var err error = nil
-			var position int = -1
-			for err == nil {
-				position, err = g.acePosition(g.playerCards[player])
-				if err == nil {
-					g.playerCards[player][position] = "AceOne"
-				} else if card == "Ace" {
-					card = "AceOne"
-				}
-			}
-		}
-
-		g.playerCards[player] = append(g.playerCards[player], card)
-		return nil
-	} else {
-		return fmt.Errorf("%s", err.Error())
-	}
-}
-
-func (g *blackjack) Winner() string {
-	totals := make(map[string]int, len(g.playerCards))
-
-	for name, cards := range g.playerCards {
-		totals[name] = g.calculatePoints(cards)
-	}
-
-	var winners []string
-
-	maxPoints := 0
-	for name, points := range totals {
-		if points > 42 {
-			continue
-		}
-
-		if points > maxPoints {
-			winners = []string{name}
-			maxPoints = points
-		} else if points == maxPoints {
-			winners = append(winners, name)
-		}
-	}
-
-	if len(winners) != 1 {
-		return "Draw"
-	}
-
-	return winners[0]
 }
 
 // Shuffles the cards, in style, like a proper casino croupier
@@ -178,13 +158,13 @@ func (g *blackjack) acePosition(cards []card) (int, error) {
 }
 
 // draws the next card from the "deck/s" (aka gameCards). If we run out of cards, an error is returned
-func (g *blackjack) drawCard() (card, error) {
+func (g *blackjack) drawCard() card {
 	if g.nextCardToDraw >= len(g.gameCards) {
-		return card(""), fmt.Errorf("no more cards to deal :(")
+		panic("no more cards to deal? :(")
 	}
 
 	card := g.gameCards[g.nextCardToDraw]
 	g.nextCardToDraw++
 
-	return card, nil
+	return card
 }
