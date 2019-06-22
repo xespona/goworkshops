@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-const defaultDecksNumber = 1
+const DefaultDecksNumber = 1
 const MinPlayers = 1
 const MaxPlayers = 6
 const Croupier = "Croupier"

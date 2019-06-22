@@ -25,7 +25,7 @@ func main() {
 	fmt.Printf("Awesome \\m/, current players are: %s \n", strings.Join(playerNames, ", "))
 	fmt.Printf("Starting game... \n")
 
-	game := blackjack.New(playerNames, blackjack.NewPokerDeck(), 1)
+	game := blackjack.New(playerNames, blackjack.NewPokerDeck(), blackjack.DefaultDecksNumber)
 
 	fmt.Printf("carts dealt: %v \n", game.CurrentStatus())
 	fmt.Println("Now we will start playing! Remember, press H to Hit and S to Stand")
