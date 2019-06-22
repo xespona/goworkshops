@@ -37,7 +37,7 @@ func main() {
 			continue
 		}
 
-		sleepAndSpacesInOutput(2)
+		sleepAndSpacesInOutput(1)
 
 		score := playTurn(game, playerName)
 
@@ -115,7 +115,6 @@ func playTurn(game blackjack.PlayableBlackJackSim, playerName string) int {
 func sleepAndSpacesInOutput(numSeconds int) {
 	time.Sleep(time.Duration(numSeconds) * time.Second)
 	fmt.Print("\033[H\033[2J")
-	fmt.Println()
 	fmt.Println()
 	fmt.Println()
 	fmt.Println()

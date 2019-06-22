@@ -39,11 +39,12 @@ func (g *blackjack) PlayerPoints(player string) int {
 	return g.calculatePoints(g.playerCards[player])
 }
 
-// Returns A COPY of the current game status
+// Returns a copy of the current game status
 func (g *blackjack) CurrentStatus() map[string][]card {
 	var result map[string][]card
 	result = make(map[string][]card, len(g.playerCards))
 	for name, cards := range g.playerCards {
+		result[name] = make([]card, len(cards))
 		for i, card := range cards {
 			result[name][i] = card
 		}
