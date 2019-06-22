@@ -4,17 +4,25 @@ import (
 	"fmt"
 )
 
+const Croupier = "Croupier"
+const Draw = "Draw"
+const MaxScore = 42
+const MinPlayers = 1 // Croupier is not counted in here bc is always playing. No croupier no party.
+const MaxPlayers = 6
+
 type game struct {
 	players map[string][]string
 	cards   map[string]int
 }
 
-type BlackjackSim interface {
-	Hit(player string, card string)
+type PlayableBlackJackSim interface {
+	PlayerPoints(player string) int
+	CurrentStatus() map[string][]string
+	Hit(player string)
 	Winner() string
 }
 
-func New(initialSituation map[string][]string) BlackjackSim {
+func New(players []string) PlayableBlackJackSim {
 	cards := map[string]int{
 		"AceOne": 1,
 		"Ace":    11,
@@ -32,20 +40,27 @@ func New(initialSituation map[string][]string) BlackjackSim {
 		"King":   10,
 	}
 
+	// FIXME FIXME FIXME: Deal random cards to the given players and the croupier
 	return &game{
-		players: initialSituation,
+		players: map[string][]string{"PLAYER ONE":{"ACE", "JACK"}, "PLAYER TWO":{"ACE", "QUEEN"}, Croupier:{"KING"}},
 		cards:   cards,
 	}
 }
 
-func (g *game) Hit(player string, card string) {
-	//fmt.Println(g.players[player])
-	//fmt.Println(player, card)
+func (g *game) PlayerPoints(player string) int {
+	return g.calculatePoints(g.players[player])
+}
 
+func (g *game) CurrentStatus() map[string][]string {
+	return g.players
+}
+
+func (g *game) Hit(player string) {
+	card := "ACE" // FIXME FIXME FIXME: get a random card!
 	actualPoints := g.calculatePoints(g.players[player])
 	if actualPoints+g.cards[card] > 42 {
 		var err error = nil
-		var position int = -1
+		var position = -1
 		for err == nil {
 			position, err = g.acePosition(g.players[player])
 			if err == nil {
@@ -57,7 +72,6 @@ func (g *game) Hit(player string, card string) {
 	}
 
 	g.players[player] = append(g.players[player], card)
-	//fmt.Println(g.players[player])
 }
 
 func (g *game) Winner() string {
@@ -83,11 +97,11 @@ func (g *game) Winner() string {
 		}
 	}
 
-	if len(winners) != 1 {
-		return "Draw"
+	if len(winners) == 1 {
+		return winners[0]
 	}
 
-	return winners[0]
+	return "Draw"
 }
 
 func (g *game) calculatePoints(cards []string) int {
