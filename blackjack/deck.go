@@ -1,6 +1,5 @@
 package blackjack
 
-
 const (
 	Ace    card = "Ace"
 	Two    card = "Two"
