@@ -34,19 +34,24 @@ type (
 	}
 )
 
+// Returns the current points of a given player
 func (g *blackjack) PlayerPoints(player string) int {
 	return g.calculatePoints(g.playerCards[player])
 }
 
+// Returns A COPY of the current game status
 func (g *blackjack) CurrentStatus() map[string][]card {
 	var result map[string][]card
 	result = make(map[string][]card, len(g.playerCards))
 	for name, cards := range g.playerCards {
-		result[name] = cards
+		for i, card := range cards {
+			result[name][i] = card
+		}
 	}
 	return result
 }
 
+// Deals another card to a given player
 func (g *blackjack) Hit(player string) {
 	actualPoints := g.calculatePoints(g.playerCards[player])
 	card := g.drawCard()
@@ -66,6 +71,7 @@ func (g *blackjack) Hit(player string) {
 	g.playerCards[player] = append(g.playerCards[player], card)
 }
 
+// Returns the winner of the game! (or draw if nobody won)
 func (g *blackjack) Winner() string {
 	totals := make(map[string]int, len(g.playerCards))
 
@@ -96,6 +102,7 @@ func (g *blackjack) Winner() string {
 	return Draw
 }
 
+// Creates the game
 func New(players []string, deck Deck, requestedDecks int) PlayableBlackJackSim {
 	if len(players) < MinPlayers || len(players) > MaxPlayers {
 		panic(fmt.Sprintf("invalid number of players: %d", len(players)))
