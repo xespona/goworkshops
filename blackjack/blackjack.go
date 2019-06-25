@@ -110,7 +110,7 @@ func New(players []string, deck Deck, requestedDecks int) PlayableBlackJackSim {
 	}
 
 	if requestedDecks <= 0 {
-		requestedDecks = defaultDecksNumber
+		requestedDecks = DefaultDecksNumber
 	}
 
 	// Get ALL the cards the game will be played with (on a normal day, this should be 52 cards - 13 * 4)

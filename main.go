@@ -65,9 +65,9 @@ func main() {
 		score := playCroupier(game, maxScore)
 
 		if score > blackjack.MaxScore {
-			fmt.Printf("The Croupier has more than %dpoints, Croupier bust!\n", blackjack.MaxScore)
+			fmt.Printf("The Croupier stopped at %dpoints, Croupier bust!\n", score)
 		} else {
-			fmt.Printf("The Croupier stopped at %dpoints\n", blackjack.MaxScore)
+			fmt.Printf("The Croupier stopped at %dpoints\n", score)
 		}
 
 		sleepAndSpacesInOutput(2)
@@ -97,6 +97,12 @@ func playCroupier(game blackjack.PlayableBlackJackSim, maxScore int) int {
 		score = game.PlayerPoints(blackjack.Croupier)
 		fmt.Printf("current cards: %v, score for %s: %d \n", game.CurrentStatus(), blackjack.Croupier, score)
 	}
+
+	if score == maxScore && score < blackjack.MaxScore - 7 {
+		game.Hit(blackjack.Croupier)
+		score = game.PlayerPoints(blackjack.Croupier)
+		fmt.Printf("current cards: %v, score for %s: %d \n", game.CurrentStatus(), blackjack.Croupier, score)
+	}
 	return score
 }
 
@@ -104,7 +110,7 @@ func playTurn(game blackjack.PlayableBlackJackSim, playerName string) int {
 	fmt.Printf("%s, It is your turn!\n", playerName)
 
 	score := game.PlayerPoints(playerName)
-	for score < blackjack.MaxScore && readMove(playerName) != "S" {
+	for score < blackjack.MaxScore && strings.ToUpper(readMove(playerName)) != "S" {
 		game.Hit(playerName)
 		score = game.PlayerPoints(playerName)
 		fmt.Printf("current cards: %v, score for %s: %d \n", game.CurrentStatus(), playerName, score)
@@ -153,7 +159,7 @@ func getNumPlayers() int {
 func readMove(player string) string {
 	var move string
 
-	fmt.Println("Hit (H) or Stand? (S)", player)
+	fmt.Println("Hit (H or Anything) or Stand? (S)", player)
 
 	if _, err := fmt.Scanf("%s", &move); err != nil {
 		panic(err)
